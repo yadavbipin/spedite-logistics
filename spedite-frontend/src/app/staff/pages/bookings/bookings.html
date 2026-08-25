@@ -1,0 +1,663 @@
+<div class="page-shell">
+  <section class="workspace-hero">
+    <div class="workspace-hero__copy">
+      <p class="eyebrow">Lorry Receipt workspace</p>
+      <h1>Search records, complete drafts, and print LR copies in one place.</h1>
+      <p class="workspace-hero__copy-text">
+        Search live records, complete mandatory details, and keep a running preview of the three paper copies before printing.
+      </p>
+    </div>
+
+    <div class="workspace-hero__stats">
+      <article>
+        <span>Total records</span>
+        <strong>{{ vehiclesBookedCount }}</strong>
+      </article>
+      <article>
+        <span>Confirmed</span>
+        <strong>{{ confirmedBookings.length }}</strong>
+      </article>
+      <article>
+        <span>Drafts</span>
+        <strong>{{ draftBookings.length }}</strong>
+      </article>
+    </div>
+  </section>
+
+  <div class="tabs">
+    <button type="button" [class.active]="activeTab === 'overview'" (click)="activeTab = 'overview'">Search Lorry Receipt</button>
+    <button type="button" [class.active]="activeTab === 'manage'" (click)="activeTab = 'manage'">Generate LR / Bilty</button>
+  </div>
+
+  @if (successMessage) {
+    <div class="alert success">{{ successMessage }}</div>
+  }
+
+  @if (errorMessage) {
+    <div class="alert error">{{ errorMessage }}</div>
+  }
+
+  @if (connectionStatus === 'checking') {
+    <div class="alert info">
+      Checking backend connection. Editing stays locked until the API responds.
+    </div>
+  }
+
+  @if (connectionStatus === 'offline') {
+    <div class="alert error backend-status">
+      <div>
+        <strong>Backend offline</strong>
+        <p>
+          You can keep editing locally, but saving, searching, and PDF actions will not work until the API server is running.
+        </p>
+      </div>
+      <button type="button" class="secondary" (click)="loadBookings()" [disabled]="isLoading">Retry connection</button>
+    </div>
+  }
+
+  @if (activeTab === 'overview') {
+    <section class="finder-card">
+      <div class="finder-card__row">
+        <label class="finder-select">
+          <span>Status</span>
+          <select [formControl]="statusControl">
+            <option value="ALL">Any</option>
+            <option value="DRAFT">Draft</option>
+            <option value="BOOKED">Approved</option>
+            <option value="IN_TRANSIT">On Route</option>
+            <option value="DELIVERED">Delivered</option>
+            <option value="CANCELLED">Cancelled</option>
+          </select>
+        </label>
+
+        <label class="search-field finder-search">
+          <span>Search</span>
+          <input
+            type="text"
+            [formControl]="searchControl"
+            placeholder="LR number, consignor, consignee, truck, route, e-way bill"
+            (keyup.enter)="loadBookings()" />
+        </label>
+
+        <div class="toolbar-actions finder-actions">
+          <button type="button" class="secondary" (click)="loadBookings()" [disabled]="isLoading">Search</button>
+          <button type="button" (click)="startNewBooking()" [disabled]="isLoading">New LR</button>
+        </div>
+      </div>
+
+      <div class="finder-card__summary">
+        <span>Approved {{ confirmedBookings.length }}</span>
+        <span>Draft {{ draftBookings.length }}</span>
+        <span>On route {{ onRouteBookings.length }}</span>
+      </div>
+    </section>
+
+    <section class="list-panel">
+      <div class="list-header">
+        <div>
+          <p class="section-kicker">Recent bookings</p>
+          <h2>
+            {{ statusControl.value === 'BOOKED' ? 'Approved records' : statusControl.value === 'DRAFT' ? 'Draft records' : 'Live records at a glance' }}
+          </h2>
+        </div>
+        <span>{{ recentBookings.length }} shown</span>
+      </div>
+
+      @if (recentBookings.length === 0) {
+        <div class="empty-state">
+          <h3>No records found</h3>
+          <p>Search again or start a new LR booking.</p>
+        </div>
+      } @else {
+        <div class="booking-list">
+          @for (booking of recentBookings; track booking.lrNumber) {
+            <article class="record-card">
+              <div class="record-card__rail"></div>
+              <div class="record-card__body">
+                <div class="record-card__header">
+                <div>
+                  <h3>{{ booking.lrNumber }}</h3>
+                  <p>{{ booking.lrDate }} · {{ bookingRoute(booking) }}</p>
+                </div>
+                <span class="status" [attr.data-status]="booking.bookingStatus || 'DRAFT'">
+                  {{ booking.bookingStatus || 'DRAFT' }}
+                </span>
+              </div>
+
+                <div class="record-card__grid">
+                  <div>
+                    <span>Consignor</span>
+                    <strong>{{ booking.consignor?.name || '-' }}</strong>
+                  </div>
+                  <div>
+                    <span>Consignee</span>
+                    <strong>{{ booking.consignee?.name || '-' }}</strong>
+                  </div>
+                  <div>
+                    <span>Vehicle</span>
+                    <strong>{{ bookingVehicle(booking) }}</strong>
+                  </div>
+                  <div>
+                    <span>E-Way Bill</span>
+                    <strong>{{ booking.ewayBillNo || '-' }}</strong>
+                  </div>
+                </div>
+
+                <div class="record-card__meta">
+                  <span>Truck {{ booking.truckDetails?.truckNumber || '-' }}</span>
+                  <span>{{ booking.truckDetails?.fromLocation || '-' }} to {{ booking.truckDetails?.toLocation || '-' }}</span>
+                </div>
+
+                <div class="record-card__actions">
+                <button type="button" class="secondary" (click)="editBooking(booking)">
+                  {{ isBookedBooking(booking) ? 'View' : 'Edit' }}
+                </button>
+                <button type="button" class="secondary" (click)="openLrPdf(booking)">PDF</button>
+                @if (booking.bookingStatus !== 'DELIVERED' && booking.bookingStatus !== 'CANCELLED') {
+                  <button type="button" class="accent" (click)="markDelivered(booking)">Mark Delivered</button>
+                }
+                @if (booking.bookingStatus === 'DELIVERED') {
+                  <button type="button" class="accent" (click)="openInvoicePdf(booking)">Invoice PDF</button>
+                }
+              </div>
+              </div>
+            </article>
+          }
+        </div>
+      }
+    </section>
+  }
+
+  @if (activeTab === 'manage') {
+    <section class="manage-banner">
+      <div>
+        <p class="eyebrow">Generate LR / Bilty</p>
+        <h1>Finish the draft, then print the three-copy LR PDF.</h1>
+        <p>
+          The preview stays live while you type, and the draft will auto-save once the required details are complete.
+        </p>
+      </div>
+
+      <div class="manage-banner__status">
+        <strong>{{ builtyPreview.readyToPrint ? 'Ready for print' : 'Editing draft' }}</strong>
+        <span>{{ builtyPreview.missingFields.length }} field(s) pending</span>
+        <div class="manage-banner__actions">
+          <button type="button" class="secondary" (click)="currentBooking?.lrNumber ? updateBooking() : createBooking()" [disabled]="isLoading || isBookingLocked()">
+            Save Draft
+          </button>
+          <button type="button" class="secondary" (click)="openLrPdf()" [disabled]="isLoading || !canPrintCurrentBuilty()">
+            Print PDF
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <section class="editor-topbar">
+      <div class="lookup-box">
+        <label for="lookupLr">Load existing LR</label>
+        <input id="lookupLr" type="text" [formControl]="lookupLrControl" placeholder="LR-20260405-0001" />
+        <button type="button" class="secondary" (click)="loadBookingByLr()" [disabled]="isLoading">Load</button>
+      </div>
+
+      <div class="editor-actions">
+        <button type="button" class="secondary" (click)="startNewBooking()" [disabled]="isLoading">Reset</button>
+        <button type="button" (click)="createBooking()" [disabled]="isLoading || isBookingLocked()">Save Draft</button>
+        <button type="button" (click)="updateBooking()" [disabled]="isLoading || !currentBooking?.lrNumber || isBookingLocked()">Update</button>
+        <button type="button" class="accent" (click)="confirmBooking()" [disabled]="isLoading || !currentBooking?.lrNumber || isBookingLocked()">Confirm</button>
+        <button type="button" class="secondary" (click)="openLrPdf()" [disabled]="isLoading || !canPrintCurrentBuilty()">Print PDF</button>
+        <button
+          type="button"
+          class="accent"
+          (click)="markDelivered(currentBooking)"
+          [disabled]="isLoading || !currentBooking?.lrNumber || currentBooking?.bookingStatus === 'DELIVERED' || currentBooking?.bookingStatus === 'CANCELLED'">
+          Mark Delivered
+        </button>
+        <button
+          type="button"
+          class="secondary"
+          (click)="openInvoicePdf(currentBooking)"
+          [disabled]="isLoading || !currentBooking?.bookingId || currentBooking?.bookingStatus !== 'DELIVERED'">
+          Invoice PDF
+        </button>
+      </div>
+    </section>
+
+    @if (currentBooking) {
+      <section class="current-booking">
+        <div><span>Booking ID</span><strong>{{ currentBooking.bookingId }}</strong></div>
+        <div><span>LR Number</span><strong>{{ currentBooking.lrNumber }}</strong></div>
+        <div><span>Status</span><strong>{{ currentBooking.bookingStatus || 'DRAFT' }}</strong></div>
+        <div><span>Created</span><strong>{{ currentBooking.lrDate }}</strong></div>
+      </section>
+    }
+
+    <div class="booking-workflow">
+    <form [formGroup]="bookingForm" class="booking-form">
+      <section class="form-section">
+        <h2>Booking Basics</h2>
+        <div class="grid three-col">
+          <label>
+            E-Way Bill No
+            <input type="text" formControlName="ewayBillNo" />
+          </label>
+          <label>
+            Transport Mode
+            <select formControlName="transportMode">
+              <option value="ROAD">Road</option>
+              <option value="RAIL">Rail</option>
+              <option value="AIR">Air</option>
+            </select>
+          </label>
+          <label>
+            Risk Type
+            <select formControlName="riskType">
+              <option value="OWNER_RISK">At Owner's Risk</option>
+              <option value="CARRIER_RISK">At Carrier's Risk</option>
+            </select>
+          </label>
+          <label>
+            Loading Date
+            <input type="date" formControlName="loadingDate" />
+          </label>
+          <label>
+            Reporting Date
+            <input type="date" formControlName="reportingDate" />
+          </label>
+          <label class="full-width">
+            Remarks
+            <textarea formControlName="remarks" rows="3"></textarea>
+          </label>
+        </div>
+      </section>
+
+      <section class="split-section">
+        <section class="form-section" formGroupName="consignor">
+          <h2>Consignor Details</h2>
+          <div class="grid two-col">
+            <label>
+              Name
+              <input type="text" formControlName="name" />
+            </label>
+            <label>
+              GST Number
+              <input type="text" formControlName="gstNumber" />
+            </label>
+            <label>
+              Contact Number
+              <input type="text" formControlName="contactNumber" />
+            </label>
+            <label>
+              Email(s)
+              <input type="text" formControlName="emailText" placeholder="Comma separated" />
+            </label>
+          </div>
+          <div formGroupName="address" class="grid two-col">
+            <label class="full-width">
+              Address
+              <input type="text" formControlName="addressLine" />
+            </label>
+            <label>
+              City
+              <input type="text" formControlName="city" />
+            </label>
+            <label>
+              State
+              <input type="text" formControlName="state" />
+            </label>
+            <label>
+              Country
+              <input type="text" formControlName="country" />
+            </label>
+            <label>
+              Pin Code
+              <input type="text" formControlName="pinCode" />
+            </label>
+          </div>
+        </section>
+
+        <section class="form-section" formGroupName="consignee">
+          <h2>Consignee Details</h2>
+          <div class="grid two-col">
+            <label>
+              Name
+              <input type="text" formControlName="name" />
+            </label>
+            <label>
+              GST Number
+              <input type="text" formControlName="gstNumber" />
+            </label>
+            <label>
+              Contact Number
+              <input type="text" formControlName="contactNumber" />
+            </label>
+            <label>
+              Email(s)
+              <input type="text" formControlName="emailText" placeholder="Comma separated" />
+            </label>
+          </div>
+          <div formGroupName="address" class="grid two-col">
+            <label class="full-width">
+              Address
+              <input type="text" formControlName="addressLine" />
+            </label>
+            <label>
+              City
+              <input type="text" formControlName="city" />
+            </label>
+            <label>
+              State
+              <input type="text" formControlName="state" />
+            </label>
+            <label>
+              Country
+              <input type="text" formControlName="country" />
+            </label>
+            <label>
+              Pin Code
+              <input type="text" formControlName="pinCode" />
+            </label>
+          </div>
+        </section>
+      </section>
+
+      <section class="form-section" formGroupName="truckDetails">
+        <h2>Truck Details</h2>
+        <div class="grid three-col">
+          <label>
+            Truck Number
+            <input type="text" formControlName="truckNumber" />
+          </label>
+          <label>
+            Vehicle Type
+            <input type="text" formControlName="vehicleType" />
+          </label>
+          <label>
+            Weight Guarantee
+            <input type="number" formControlName="weightGuarantee" />
+          </label>
+          <label>
+            From
+            <input type="text" formControlName="fromLocation" />
+          </label>
+          <label>
+            To
+            <input type="text" formControlName="toLocation" />
+          </label>
+          <label>
+            Load Type
+            <select formControlName="loadType">
+              <option value="FULL_LOAD">Full Load</option>
+              <option value="PART_LOAD">Part Load</option>
+            </select>
+          </label>
+        </div>
+
+        <div formGroupName="driver" class="grid three-col stacked-grid">
+          <label>
+            Driver Name
+            <input type="text" formControlName="name" />
+          </label>
+          <label>
+            Driver Mobile
+            <input type="text" formControlName="mobile" />
+          </label>
+          <label>
+            License Number
+            <input type="text" formControlName="licenseNumber" />
+          </label>
+        </div>
+      </section>
+
+      <section class="split-section">
+        <section class="form-section" formGroupName="freightDetails">
+          <h2>Freight Details</h2>
+          <div class="grid two-col">
+            <label>
+              Freight Type
+              <select formControlName="freightType">
+                <option value="PAID">Paid</option>
+                <option value="TO_PAY">To Pay</option>
+                <option value="TO_BE_BILLED">To be billed</option>
+              </select>
+            </label>
+            <label>
+              Basic Freight
+              <input type="number" formControlName="basicFreight" />
+            </label>
+            <label class="checkbox-row full-width">
+              <input type="checkbox" formControlName="hideFreightInPdf" />
+              Hide freight from PDF
+            </label>
+          </div>
+        </section>
+
+        <section class="form-section" formGroupName="demurrageDetails">
+          <h2>Demurrage Details</h2>
+          <div class="grid two-col">
+            <label class="checkbox-row full-width">
+              <input type="checkbox" formControlName="applicable" />
+              Demurrage applicable
+            </label>
+            <label>
+              Charge Type
+              <select formControlName="chargeType">
+                <option value="PER_HOUR">Per Hour</option>
+                <option value="PER_DAY">Per Day</option>
+                <option value="FIXED">Fixed</option>
+              </select>
+            </label>
+            <label>
+              Charge Applicable After
+              <input type="text" formControlName="chargeAfter" />
+            </label>
+          </div>
+        </section>
+      </section>
+
+      <section class="form-section" formGroupName="insuranceDetails">
+        <h2>Insurance Details</h2>
+        <div class="grid three-col">
+          <label class="checkbox-row">
+            <input type="checkbox" formControlName="insured" />
+            Material insured
+          </label>
+          <label>
+            Insurance Company
+            <input type="text" formControlName="insuranceCompany" />
+          </label>
+          <label>
+            Policy Number
+            <input type="text" formControlName="policyNumber" />
+          </label>
+          <label>
+            Insurance Date
+            <input type="date" formControlName="insuranceDate" />
+          </label>
+          <label>
+            Insurance Amount
+            <input type="number" formControlName="insuranceAmount" />
+          </label>
+          <label class="full-width">
+            Notes
+            <textarea formControlName="notes" rows="2"></textarea>
+          </label>
+        </div>
+      </section>
+
+      <section class="form-section">
+        <div class="section-heading">
+          <h2>Material Details</h2>
+          <button type="button" class="secondary" (click)="addMaterial()" [disabled]="isLoading">Add Material</button>
+        </div>
+
+        <div formArrayName="materials" class="materials-list">
+          @for (material of materials.controls; track $index) {
+            <div [formGroupName]="$index" class="material-card">
+              <div class="grid four-col">
+                <label>
+                  Material Name
+                  <input type="text" formControlName="materialName" />
+                </label>
+                <label>
+                  Packaging Type
+                  <input type="text" formControlName="packagingType" />
+                </label>
+                <label>
+                  No. of Articles
+                  <input type="number" formControlName="noOfArticles" />
+                </label>
+                <label>
+                  HSN Code
+                  <input type="text" formControlName="hsnCode" />
+                </label>
+                <label>
+                  Actual Weight
+                  <input type="number" formControlName="actualWeight" />
+                </label>
+                <label>
+                  Charged Weight
+                  <input type="number" formControlName="chargedWeight" />
+                </label>
+                <label>
+                  Rate
+                  <input type="number" formControlName="rate" />
+                </label>
+                <label>
+                  Container Name
+                  <input type="text" formControlName="containerName" />
+                </label>
+              </div>
+
+              <div class="material-actions">
+                <button type="button" class="danger" (click)="removeMaterial($index)" [disabled]="materials.length <= 1 || isLoading">
+                  Remove
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      </section>
+    </form>
+
+    <aside class="builty-preview-panel">
+      <div class="preview-panel__header">
+        <div>
+          <p class="eyebrow preview-eyebrow">Paper Builty Preview</p>
+          <h2>Draft preview</h2>
+        </div>
+        <span class="preview-status" [class.ready]="builtyPreview.readyToPrint">
+          {{ builtyPreview.readyToPrint ? 'Ready for print' : 'Editing draft' }}
+        </span>
+      </div>
+      <p class="preview-panel__copy">
+        This preview updates in real time as you type. Save the booking before printing the PDF.
+      </p>
+
+      @if (builtyPreview.missingFields.length) {
+        <div class="preview-warning">
+          <strong>Missing:</strong> {{ builtyPreview.missingFields.join(', ') }}
+        </div>
+      }
+
+      <div class="preview-copies">
+        @for (copy of builtyPreview.copies; track copy) {
+          <article class="preview-card">
+            <div class="preview-card__top">
+              <div>
+                <div class="preview-brand">{{ builtyPreview.companyName }}</div>
+                <h3>{{ copy }}</h3>
+                <div class="preview-company-line">{{ builtyPreview.companyAddress }}</div>
+                <div class="preview-company-line">Mobile: {{ builtyPreview.companyPhone }} | GSTIN: {{ builtyPreview.companyGstin }}</div>
+              </div>
+              <div class="preview-copy-badge">{{ builtyPreview.status }}</div>
+            </div>
+
+            <div class="preview-ref-grid">
+              <div>
+                <span>LR No.</span>
+                <strong>{{ builtyPreview.lrNumber }}</strong>
+              </div>
+              <div>
+                <span>LR Date</span>
+                <strong>{{ builtyPreview.lrDate }}</strong>
+              </div>
+              <div>
+                <span>Mode</span>
+                <strong>{{ builtyPreview.transportMode }}</strong>
+              </div>
+              <div>
+                <span>Load</span>
+                <strong>{{ builtyPreview.loadType }}</strong>
+              </div>
+            </div>
+
+            <div class="preview-section">
+              <div class="preview-section__title">Consignor / Consignee</div>
+              <div class="preview-party-grid">
+                <div>
+                  <span>Consignor</span>
+                  <strong>{{ builtyPreview.consignorName }}</strong>
+                  <p>{{ builtyPreview.consignorAddress }}</p>
+                  <p>{{ builtyPreview.consignorPhone }}</p>
+                  <p>{{ builtyPreview.consignorGst }}</p>
+                </div>
+                <div>
+                  <span>Consignee</span>
+                  <strong>{{ builtyPreview.consigneeName }}</strong>
+                  <p>{{ builtyPreview.consigneeAddress }}</p>
+                  <p>{{ builtyPreview.consigneePhone }}</p>
+                  <p>{{ builtyPreview.consigneeGst }}</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="preview-section">
+              <div class="preview-section__title">Route / Vehicle</div>
+              <div class="preview-route">
+                <div>
+                  <span>Route</span>
+                  <strong>{{ builtyPreview.route }}</strong>
+                </div>
+                <div>
+                  <span>Truck</span>
+                  <strong>{{ builtyPreview.truckNumber }}</strong>
+                  <p>{{ builtyPreview.vehicleType }}</p>
+                </div>
+                <div>
+                  <span>Loading / Reporting</span>
+                  <strong>{{ builtyPreview.loadingDate }} | {{ builtyPreview.reportingDate }}</strong>
+                </div>
+                <div>
+                  <span>E-Way Bill</span>
+                  <strong>{{ builtyPreview.ewayBillNo }}</strong>
+                </div>
+              </div>
+            </div>
+
+            <div class="preview-section">
+              <div class="preview-section__title">Materials</div>
+              <div class="preview-materials">
+                @for (material of builtyPreview.materials; track material.title) {
+                  <div class="preview-material">
+                    <strong>{{ material.title }}</strong>
+                    <span>{{ material.meta }}</span>
+                  </div>
+                }
+              </div>
+            </div>
+
+            <div class="preview-section">
+              <div class="preview-section__title">Notes</div>
+              <ul class="preview-notes">
+                @for (note of builtyPreview.notes; track note) {
+                  <li>{{ note }}</li>
+                }
+              </ul>
+            </div>
+          </article>
+        }
+      </div>
+    </aside>
+    </div>
+  }
+</div>

@@ -1,0 +1,34 @@
+<div class="login-page">
+  <section class="login-hero">
+    <p class="eyebrow">Staff portal</p>
+    <h1>Open dispatch, billing, and booking tools.</h1>
+    <p class="login-copy">
+      Use the operations console to keep shipments moving with less friction and more visibility.
+    </p>
+
+    <ul class="feature-list">
+      @for (item of highlights; track item.title) {
+        <li>
+          <strong>{{ item.title }}</strong>
+          <span>{{ item.description }}</span>
+        </li>
+      }
+    </ul>
+  </section>
+
+  <section class="login-card">
+    <div class="card-head">
+      <p class="card-kicker">Welcome back</p>
+      <h2>Continue to the workspace</h2>
+    </div>
+
+    <div class="login-form">
+      <p class="login-note">
+        Staff authentication is not enabled in this release. Deploy this workspace only behind
+        private network access until sign-in is added.
+      </p>
+      <a routerLink="/staff/dashboard" class="submit-button">Enter workspace</a>
+      <a routerLink="/" class="helper-link">Back to site</a>
+    </div>
+  </section>
+</div>

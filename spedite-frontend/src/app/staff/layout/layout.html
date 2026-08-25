@@ -1,0 +1,50 @@
+<div class="staff-shell">
+  <aside class="staff-sidebar">
+    <a routerLink="/staff/dashboard" class="sidebar-brand">
+      <span class="sidebar-brand__mark">S</span>
+      <span class="sidebar-brand__copy">
+        <strong>{{ companyName }}</strong>
+        <small>Transport operations</small>
+      </span>
+      <span class="sidebar-brand__version">{{ versionLabel }}</span>
+    </a>
+
+    <div class="sidebar-company">
+      <p class="sidebar-company__label">Asian Trans Logistics</p>
+      <strong>{{ companyPhone }}</strong>
+      <small>LR, invoice, and payment operations</small>
+    </div>
+
+    <button type="button" class="sidebar-fy">
+      <span>{{ financialYear }}</span>
+      <span class="sidebar-fy__caret">⌄</span>
+    </button>
+
+    @for (section of sections; track section.title) {
+      <section class="sidebar-section">
+        <p>{{ section.title }}</p>
+        <nav>
+          @for (item of section.items; track item.label) {
+            <a
+              [routerLink]="item.link"
+              routerLinkActive="active"
+              [routerLinkActiveOptions]="item.exact ? { exact: true } : { exact: false }"
+              [class.muted]="item.muted">
+              {{ item.label }}
+            </a>
+          }
+        </nav>
+      </section>
+    }
+
+    <div class="sidebar-footer">
+      <span>API-backed workspace</span>
+      <strong>Live operational records</strong>
+      <small>Connection status is shown inside each workspace.</small>
+    </div>
+  </aside>
+
+  <main class="staff-content">
+    <router-outlet></router-outlet>
+  </main>
+</div>

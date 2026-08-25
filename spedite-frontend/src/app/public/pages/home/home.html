@@ -1,0 +1,96 @@
+<div class="landing-page">
+  <section class="hero">
+    <div class="hero-copy">
+      <p class="eyebrow">Live logistics control</p>
+      <h1>Move freight with more confidence and less friction.</h1>
+      <p class="hero-description">
+        Spedite brings booking, routing, and operations into a cleaner workspace built for dispatch
+        teams who want faster decisions and fewer handoffs.
+      </p>
+
+      <div class="hero-actions">
+        <a routerLink="/auth/login" class="button button--primary">Open staff portal</a>
+        <a routerLink="/" fragment="services" class="button button--secondary">See services</a>
+      </div>
+
+      <ul class="hero-points">
+        <li>Draft and confirm bookings faster</li>
+        <li>Keep LR records visible and tidy</li>
+        <li>Designed for mobile and desktop</li>
+      </ul>
+    </div>
+
+    <aside class="hero-card">
+      <div class="hero-card__top">
+        <span>Operations pulse</span>
+        <strong>Live</strong>
+      </div>
+
+      <div class="hero-card__stats">
+        @for (stat of stats; track stat.label) {
+          <article class="mini-stat" [attr.data-tone]="stat.tone">
+            <strong>{{ stat.value }}</strong>
+            <span>{{ stat.label }}</span>
+          </article>
+        }
+      </div>
+
+      <div class="hero-card__footer">
+        Everything your dispatch team needs in one clear, modern surface.
+      </div>
+    </aside>
+  </section>
+
+  <section class="section" id="services">
+    <div class="section-heading">
+      <div>
+        <p class="section-kicker">What we do</p>
+        <h2>Built for faster bookings and calmer operations.</h2>
+      </div>
+      <p>Visualize the work, move faster, and reduce the back-and-forth.</p>
+    </div>
+
+    <div class="service-grid">
+      @for (service of services; track service.title) {
+        <article class="service-card">
+          <span class="service-card__index">0{{ $index + 1 }}</span>
+          <h3>{{ service.title }}</h3>
+          <p>{{ service.description }}</p>
+          <small>{{ service.note }}</small>
+        </article>
+      }
+    </div>
+  </section>
+
+  <section class="section" id="process">
+    <div class="section-heading">
+      <div>
+        <p class="section-kicker">How it flows</p>
+        <h2>A simple path from first request to confirmed shipment.</h2>
+      </div>
+    </div>
+
+    <div class="process-grid">
+      @for (step of steps; track step.step) {
+        <article class="process-card">
+          <span>{{ step.step }}</span>
+          <h3>{{ step.title }}</h3>
+          <p>{{ step.description }}</p>
+        </article>
+      }
+    </div>
+  </section>
+
+  <section class="section cta-panel" id="contact">
+    <div class="cta-panel__copy">
+      <p class="section-kicker">Need access?</p>
+      <h2>Open the staff portal and start working in the operations console.</h2>
+      <p>Use the staff workspace for booking, updates, and LR document management.</p>
+    </div>
+
+    <div class="cta-panel__actions">
+      <a routerLink="/auth/login" class="button button--primary">Go to login</a>
+      <a routerLink="/staff/dashboard" class="button button--secondary">Open dashboard</a>
+    </div>
+  </section>
+</div>

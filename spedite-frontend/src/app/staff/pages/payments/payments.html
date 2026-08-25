@@ -1,0 +1,200 @@
+<div class="payments-page">
+  <section class="payments-hero">
+    <div>
+      <p class="eyebrow">Collections & profitability</p>
+      <h1>Complete payment control centre</h1>
+      <p>Track every receipt, pending balance, and consignor-wise profit or loss by month and year.</p>
+    </div>
+    <button type="button" class="refresh-button" (click)="loadInvoices()" [disabled]="loading">
+      {{ loading ? 'Refreshing…' : 'Refresh data' }}
+    </button>
+  </section>
+
+  @if (successMessage) { <div class="notice notice--success" role="status">{{ successMessage }}</div> }
+  @if (errorMessage) { <div class="notice notice--error" role="alert">{{ errorMessage }}</div> }
+
+  <section class="report-filters" aria-label="Report period filters">
+    <div class="report-filters__title">
+      <strong>Reporting period</strong>
+      <small>All figures below follow these party, month, and year filters.</small>
+    </div>
+    <label>
+      <span>Consignor</span>
+      <select [value]="selectedParty" (change)="updateParty($event)">
+        <option value="">All consignors</option>
+        @for (party of parties; track party) { <option [value]="party">{{ party }}</option> }
+      </select>
+    </label>
+    <label>
+      <span>Month</span>
+      <select [value]="selectedMonth" (change)="updateMonth($event)">
+        <option value="">All months</option>
+        @for (month of months; track month.value) { <option [value]="month.value">{{ month.label }}</option> }
+      </select>
+    </label>
+    <label>
+      <span>Year</span>
+      <select [value]="selectedYear" (change)="updateYear($event)">
+        <option value="">All years</option>
+        @for (year of years; track year) { <option [value]="year">{{ year }}</option> }
+      </select>
+    </label>
+    <button type="button" class="clear-button" (click)="clearFilters()">Clear filters</button>
+  </section>
+
+  <section class="summary-grid" aria-label="Payment summary">
+    <article>
+      <span>Total billed</span>
+      <strong>{{ totalBilled | currency:'INR':'symbol':'1.0-0' }}</strong>
+      <small>{{ filteredInvoices.length }} invoice{{ filteredInvoices.length === 1 ? '' : 's' }} in view</small>
+    </article>
+    <article data-tone="success">
+      <span>Amount received</span>
+      <strong>{{ totalReceived | currency:'INR':'symbol':'1.0-0' }}</strong>
+      <small>Confirmed collections</small>
+    </article>
+    <article data-tone="warning">
+      <span>Outstanding</span>
+      <strong>{{ totalOutstanding | currency:'INR':'symbol':'1.0-0' }}</strong>
+      <small>{{ overdueCount }} overdue invoice{{ overdueCount === 1 ? '' : 's' }}</small>
+    </article>
+    <article [attr.data-tone]="totalProfitLoss < 0 ? 'danger' : 'profit'">
+      <span>Net profit / loss</span>
+      <strong>{{ totalProfitLoss | currency:'INR':'symbol':'1.0-0' }}</strong>
+      <small>{{ profitLabel(totalProfitLoss) }} before tax</small>
+    </article>
+  </section>
+
+  <section class="payments-panel">
+    <div class="panel-title">
+      <div><p>Receivables</p><h2>Invoice payment status</h2></div>
+      <span>{{ filteredInvoices.length }} records</span>
+    </div>
+    <div class="toolbar">
+      <div class="filter-tabs" aria-label="Filter payments">
+        @for (item of ['ALL', 'PENDING', 'PARTIAL', 'PAID', 'OVERDUE']; track item) {
+          <button type="button" [class.active]="filter === item" (click)="setFilter($any(item))">
+            {{ item === 'ALL' ? 'All invoices' : item === 'PARTIAL' ? 'Partial received' : (item | titlecase) }}
+          </button>
+        }
+      </div>
+      <label class="search-box">
+        <span>Search</span>
+        <input type="search" placeholder="Invoice, LR, or party" [value]="searchTerm" (input)="updateSearch($event)" />
+      </label>
+    </div>
+
+    @if (loading) {
+      <div class="empty-state"><span class="spinner"></span><strong>Loading payments…</strong></div>
+    } @else if (filteredInvoices.length === 0) {
+      <div class="empty-state"><strong>No matching invoices</strong><p>Try changing the status or reporting-period filters.</p></div>
+    } @else {
+      <div class="table-scroll">
+        <div class="payment-table">
+          <div class="payment-row payment-row--head">
+            <span>Invoice / LR</span><span>Consignor</span><span>Invoice / due</span><span>Invoice value</span>
+            <span>Received</span><span>Pending</span><span>Profit / loss</span><span>Status</span><span>Actions</span>
+          </div>
+          @for (invoice of filteredInvoices; track invoice.invoiceId) {
+            <div class="payment-row">
+              <div class="invoice-cell"><strong>{{ invoice.invoiceNumber }}</strong><small>{{ invoice.booking?.lrNumber || 'No LR number' }}</small></div>
+              <div class="party-cell"><strong>{{ consignorName(invoice) }}</strong><small>Billed to {{ partyName(invoice) }}</small></div>
+              <div class="date-cell"><span>{{ invoice.invoiceDate | date:'dd MMM yyyy' }}</span><small>Due {{ invoice.dueDate | date:'dd MMM yyyy' }}</small></div>
+              <strong class="money">{{ invoice.totalInvoiceAmount || 0 | currency:'INR':'symbol':'1.0-0' }}</strong>
+              <span class="money money--received">{{ invoice.consigneeReceivedAmount || 0 | currency:'INR':'symbol':'1.0-0' }}</span>
+              <strong class="money money--due">{{ invoice.amountPendingFromConsignee || 0 | currency:'INR':'symbol':'1.0-0' }}</strong>
+              <div class="profit-cell" [attr.data-result]="(invoice.netProfitLossAmount || 0) < 0 ? 'loss' : 'profit'">
+                <strong>{{ invoice.netProfitLossAmount || 0 | currency:'INR':'symbol':'1.0-0' }}</strong>
+                <small>{{ invoice.profitLossStatus | titlecase }}</small>
+              </div>
+              <span class="status-pill" [attr.data-status]="displayStatus(invoice)">{{ displayStatus(invoice) | titlecase }}</span>
+              <div class="row-actions">
+                <button type="button" class="text-button" (click)="editPayment(invoice)" [disabled]="displayStatus(invoice) === 'PAID'">Receive</button>
+                <button type="button" class="icon-button" title="Open invoice PDF" (click)="openInvoicePdf(invoice)" [disabled]="openingPdfId === invoice.invoiceId">
+                  {{ openingPdfId === invoice.invoiceId ? '…' : 'PDF' }}
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    }
+  </section>
+
+  <section class="report-grid">
+    <article class="payments-panel">
+      <div class="panel-title">
+        <div><p>Party performance</p><h2>Consignor-wise profit & loss</h2></div>
+        <span>{{ partyPerformance.length }} parties</span>
+      </div>
+      @if (partyPerformance.length === 0) {
+        <div class="empty-state empty-state--small"><p>No party data for this period.</p></div>
+      } @else {
+        <div class="party-table">
+          <div class="party-row party-row--head"><span>Consignor</span><span>Billed</span><span>Received</span><span>Expenses</span><span>Pending</span><span>Result</span></div>
+          @for (party of partyPerformance; track party.name) {
+            <div class="party-row">
+              <div><strong>{{ party.name }}</strong><small>{{ party.invoiceCount }} invoices</small></div>
+              <span>{{ party.billed | currency:'INR':'symbol':'1.0-0' }}</span>
+              <span class="positive">{{ party.received | currency:'INR':'symbol':'1.0-0' }}</span>
+              <span>{{ party.expenses | currency:'INR':'symbol':'1.0-0' }}</span>
+              <span class="pending">{{ party.outstanding | currency:'INR':'symbol':'1.0-0' }}</span>
+              <div class="result" [attr.data-result]="party.profitLoss < 0 ? 'loss' : 'profit'"><strong>{{ party.profitLoss | currency:'INR':'symbol':'1.0-0' }}</strong><small>{{ profitLabel(party.profitLoss) }}</small></div>
+            </div>
+          }
+        </div>
+      }
+    </article>
+
+    <article class="payments-panel">
+      <div class="panel-title">
+        <div><p>Receipt register</p><h2>Payment date, time & amount</h2></div>
+        <span>{{ paymentLedger.length }} entries</span>
+      </div>
+      @if (paymentLedger.length === 0) {
+        <div class="empty-state empty-state--small"><p>No individual receipts recorded for this period.</p></div>
+      } @else {
+        <div class="ledger-list">
+          @for (payment of paymentLedger; track payment.paymentId) {
+            <div class="ledger-item">
+              <div class="ledger-date"><strong>{{ payment.receivedAt | date:'dd' }}</strong><span>{{ payment.receivedAt | date:'MMM yyyy' }}</span><small>{{ payment.receivedAt | date:'hh:mm a' }}</small></div>
+              <div class="ledger-copy"><strong>{{ payment.party }}</strong><span>{{ payment.invoiceNumber }} · {{ payment.lrNumber }}</span><small>{{ payment.paymentMode || 'Mode not set' }}{{ payment.referenceNumber ? ' · ' + payment.referenceNumber : '' }}</small></div>
+              <strong class="ledger-amount">{{ payment.amount | currency:'INR' }}</strong>
+            </div>
+          }
+        </div>
+      }
+    </article>
+  </section>
+</div>
+
+@if (selectedInvoice) {
+  <div class="dialog-backdrop" (click)="closeEditor()">
+    <section class="payment-dialog" role="dialog" aria-modal="true" aria-labelledby="payment-dialog-title" (click)="$event.stopPropagation()">
+      <div class="dialog-heading">
+        <div><p>Receive payment</p><h2 id="payment-dialog-title">{{ selectedInvoice.invoiceNumber }}</h2><span>{{ consignorName(selectedInvoice) }} · {{ selectedInvoice.booking?.lrNumber }}</span></div>
+        <button type="button" class="close-button" aria-label="Close" (click)="closeEditor()">×</button>
+      </div>
+      <div class="dialog-summary">
+        <div><span>Invoice</span><strong>{{ selectedInvoice.totalInvoiceAmount || 0 | currency:'INR' }}</strong></div>
+        <div><span>Received</span><strong>{{ selectedInvoice.consigneeReceivedAmount || 0 | currency:'INR' }}</strong></div>
+        <div><span>Outstanding</span><strong>{{ selectedInvoice.amountPendingFromConsignee || 0 | currency:'INR' }}</strong></div>
+      </div>
+      <form [formGroup]="paymentForm" (ngSubmit)="savePayment()">
+        <label class="field">
+          <span>Payment amount *</span>
+          <div class="money-input"><b>₹</b><input type="number" min="0.01" [max]="selectedInvoice.amountPendingFromConsignee || 0" step="0.01" formControlName="amount" /></div>
+          <small>Maximum {{ selectedInvoice.amountPendingFromConsignee || 0 | currency:'INR' }}</small>
+        </label>
+        <label class="field"><span>Received date & time *</span><input type="datetime-local" formControlName="receivedAt" /></label>
+        <label class="field"><span>Payment mode *</span><select formControlName="paymentMode"><option value="">Select mode</option>@for (mode of paymentModes; track mode) { <option [value]="mode">{{ mode }}</option> }</select></label>
+        <label class="field"><span>Reference number</span><input type="text" formControlName="referenceNumber" placeholder="UTR, cheque, or receipt no." /></label>
+        <label class="field field--wide"><span>Notes</span><textarea rows="3" formControlName="notes" placeholder="Collection or follow-up note"></textarea></label>
+        <div class="dialog-actions"><button type="button" class="cancel-button" (click)="closeEditor()" [disabled]="saving">Cancel</button><button type="submit" class="save-button" [disabled]="saving || paymentForm.invalid">{{ saving ? 'Saving…' : 'Record receipt' }}</button></div>
+      </form>
+      @if ((selectedInvoice.payments?.length || 0) > 0) {
+        <div class="dialog-history"><h3>Previous receipts</h3>@for (payment of selectedInvoice.payments; track payment.paymentId) { <div><span>{{ payment.receivedAt | date:'dd MMM yyyy, hh:mm a' }} · {{ payment.paymentMode }}</span><strong>{{ payment.amount | currency:'INR' }}</strong></div> }</div>
+      }
+    </section>
+  </div>
+}
