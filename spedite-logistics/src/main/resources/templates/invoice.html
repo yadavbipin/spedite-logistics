@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <style>
+        @page {
+            size: A4;
+            margin: 10mm 10mm 11mm 10mm;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            font-size: 9.6px;
+            color: #111827;
+            background: #ffffff;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        .page {
+            position: relative;
+        }
+
+        .top-label {
+            text-align: right;
+            font-size: 10px;
+            color: #7c7f87;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .header td {
+            vertical-align: top;
+        }
+
+        .logo-cell {
+            width: 120px;
+            padding-top: 10px;
+        }
+
+        .logo-block {
+            width: 118px;
+            height: 86px;
+            border: 1.5px solid #1f2937;
+            border-radius: 12px;
+            overflow: hidden;
+            box-sizing: border-box;
+        }
+
+        .logo-image {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        .logo-mark {
+            display: block;
+            width: 100%;
+            font-size: 22px;
+            font-weight: 800;
+            color: #1d4ed8;
+            line-height: 1;
+            letter-spacing: 0.1em;
+        }
+
+        .logo-line {
+            display: block;
+            margin: 7px auto 6px;
+            width: 72px;
+            border-top: 2px solid #1d4ed8;
+        }
+
+        .logo-tag {
+            display: block;
+            font-size: 11px;
+            font-style: italic;
+            color: #111827;
+            line-height: 1.1;
+        }
+
+        .company-name {
+            font-size: 22px;
+            font-weight: 800;
+            color: #111827;
+            text-transform: uppercase;
+            margin: 2px 0 3px;
+        }
+
+        .company-line {
+            font-size: 9.2px;
+            line-height: 1.35;
+            margin-bottom: 2px;
+        }
+
+        .company-line strong {
+            font-weight: 700;
+        }
+
+        .company-details {
+            padding-right: 8px;
+        }
+
+        .right-title {
+            text-align: right;
+            color: #7c7f87;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            padding-top: 4px;
+        }
+
+        .ref-band {
+            margin-top: 10px;
+            background: #e5e7eb;
+            padding: 12px 14px;
+            border-radius: 2px;
+        }
+
+        .ref-band td {
+            vertical-align: middle;
+            font-size: 10.2px;
+        }
+
+        .ref-band .label {
+            font-weight: 700;
+        }
+
+        .ref-band .value {
+            font-weight: 700;
+        }
+
+        .ref-band .due {
+            color: #c81e1e;
+        }
+
+        .section {
+            margin-top: 10px;
+        }
+
+        .section-title {
+            font-size: 10px;
+            font-weight: 800;
+            color: #111827;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .info-table {
+            border: 1px solid #111827;
+        }
+
+        .info-table td {
+            border: 1px solid #111827;
+            padding: 5px 7px;
+            vertical-align: top;
+        }
+
+        .info-table td.key {
+            width: 20%;
+            background: #f8fafc;
+            font-weight: 700;
+        }
+
+        .info-table td.value {
+            width: 30%;
+        }
+
+        .stack {
+            display: block;
+            line-height: 1.35;
+        }
+
+        .muted {
+            color: #6b7280;
+        }
+
+        .booking-table td.key {
+            width: 31%;
+        }
+
+        .booking-table td.value {
+            width: 19%;
+        }
+
+        .charges-table {
+            border: 1px solid #111827;
+        }
+
+        .charges-table th,
+        .charges-table td {
+            border: 1px solid #111827;
+            padding: 5px 6px;
+            vertical-align: top;
+            word-break: break-word;
+        }
+
+        .charges-table th {
+            background: #eff6ff;
+            color: #111827;
+            font-size: 9.4px;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            text-align: left;
+        }
+
+        .num {
+            text-align: right;
+            white-space: nowrap;
+        }
+
+        .subtotal-band {
+            margin-top: 8px;
+            border-top: 2px solid #111827;
+            border-bottom: 2px solid #111827;
+            padding: 7px 0;
+        }
+
+        .subtotal-band td {
+            font-weight: 800;
+            font-size: 10.8px;
+        }
+
+        .subtotal-band .amount {
+            text-align: right;
+            font-size: 14px;
+        }
+
+        .bottom-grid td {
+            vertical-align: top;
+            padding-top: 10px;
+        }
+
+        .bank-block {
+            padding-right: 10px;
+        }
+
+        .bank-title,
+        .terms-title {
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .bank-table td {
+            padding: 2px 0;
+            vertical-align: top;
+        }
+
+        .bank-table td.key {
+            width: 32%;
+            font-weight: 700;
+        }
+
+        .bank-table td.value {
+            width: 68%;
+            font-weight: 700;
+        }
+
+        .amount-panel {
+            border: 1px solid #bdbdbd;
+        }
+
+        .amount-panel td {
+            border-bottom: 1px solid #bdbdbd;
+            padding: 5px 8px;
+        }
+
+        .amount-panel td.key {
+            width: 58%;
+            font-weight: 700;
+        }
+
+        .amount-panel td.value {
+            width: 42%;
+            text-align: right;
+        }
+
+        .amount-panel tr:last-child td {
+            border-bottom: none;
+        }
+
+        .amount-panel .grand td {
+            font-weight: 800;
+            background: #f8fafc;
+        }
+
+        .amount-words {
+            margin-top: 10px;
+            text-align: right;
+        }
+
+        .amount-words .label {
+            font-weight: 700;
+        }
+
+        .terms-list {
+            margin: 0;
+            padding-left: 16px;
+        }
+
+        .terms-list li {
+            margin-bottom: 4px;
+            line-height: 1.35;
+        }
+
+        .seal-wrap {
+            margin-top: 22px;
+            text-align: center;
+        }
+
+        .seal {
+            width: 92px;
+            height: 92px;
+            margin: 0 auto 8px;
+            overflow: hidden;
+        }
+
+        .seal-image {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        .signature-line {
+            margin: 0 auto 6px;
+            width: 150px;
+            border-top: 1px solid #1f2937;
+        }
+
+        .signature-label {
+            font-weight: 800;
+        }
+
+        .signature-company {
+            margin-top: 2px;
+            color: #111827;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+<body>
+<div class="page">
+    <div class="top-label">Original for recipient</div>
+
+    <table class="header">
+        <tr>
+            <td class="logo-cell">
+                <div class="logo-block">
+                    <img class="logo-image" src="{{companyLogoDataUri}}" alt="Asian Trans Logistics logo" />
+                </div>
+            </td>
+            <td class="company-details">
+                <div class="company-name">{{companyName}}</div>
+                <div class="company-line">{{companyAddress}}</div>
+                <div class="company-line"><strong>Mobile:</strong> {{companyPhone}} <span style="display:inline-block; width: 28px;"></span> <strong>GSTIN:</strong> {{companyGstin}} <span style="display:inline-block; width: 28px;"></span> <strong>PAN Number:</strong> {{companyPan}}</div>
+                <div class="company-line"><strong>Email:</strong> {{companyEmail}}</div>
+                <div class="company-line"><strong>UDYAM:</strong> {{companyUdyam}}</div>
+            </td>
+            <td style="width: 150px; text-align: right;">
+                <div class="right-title">Tax Invoice</div>
+            </td>
+        </tr>
+    </table>
+
+    <div class="ref-band">
+        <table>
+            <tr>
+                <td style="width: 33%;">
+                    <span class="label">Invoice No.:</span>
+                    <span class="value">{{invoiceNumber}}</span>
+                </td>
+                <td style="width: 34%; text-align: center;">
+                    <span class="label">Invoice Date:</span>
+                    <span class="value">{{invoiceDate}}</span>
+                </td>
+                <td style="width: 33%; text-align: right;">
+                    <span class="label">Due Date:</span>
+                    <span class="value due">{{dueDate}}</span>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="section">
+        <table class="info-table">
+            <tr>
+                <td class="key">Bill To</td>
+                <td class="value" colspan="3">
+                    <span class="stack" style="font-size: 12px; font-weight: 800;">{{billToName}}</span>
+                    <span class="stack">{{billToAddress}}</span>
+                    <span class="stack"><strong>Mobile:</strong> {{billToPhone}}</span>
+                    <span class="stack"><strong>GSTIN:</strong> {{billToGst}}</span>
+                    <span class="stack"><strong>PAN Number:</strong> {{billToPan}}</span>
+                    <span class="stack"><strong>Place of Supply:</strong> {{billToPlaceOfSupply}}</span>
+                </td>
+            </tr>
+            <tr>
+                <td class="key">Booking No.</td>
+                <td class="value">{{bookingId}}</td>
+                <td class="key">LR No.</td>
+                <td class="value">{{lrNumber}}</td>
+            </tr>
+            <tr>
+                <td class="key">Dispatch Date</td>
+                <td class="value">{{dispatchDate}}</td>
+                <td class="key">Delivery Date</td>
+                <td class="value">{{deliveryDate}}</td>
+            </tr>
+            <tr>
+                <td class="key">From</td>
+                <td class="value">{{fromLocation}}</td>
+                <td class="key">To</td>
+                <td class="value">{{toLocation}}</td>
+            </tr>
+            <tr>
+                <td class="key">Consignor Invoice No.</td>
+                <td class="value">{{consignorInvoiceNo}}</td>
+                <td class="key">Vehicle No.</td>
+                <td class="value">{{vehicleNumber}}</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="section">
+        <table class="charges-table">
+            <thead>
+            <tr>
+                <th style="width: 32%;">Services</th>
+                <th style="width: 10%;">SAC</th>
+                <th style="width: 18%;">Packages</th>
+                <th style="width: 14%;">Actual Weight</th>
+                <th style="width: 14%;">Charge Weight</th>
+                <th style="width: 12%;">Amount</th>
+            </tr>
+            </thead>
+            <tbody>
+            {{lineRows}}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="subtotal-band">
+        <table>
+            <tr>
+                <td style="width: 70%;">SUBTOTAL</td>
+                <td class="amount" style="width: 30%;">Rs. {{subtotalAmount}}</td>
+            </tr>
+        </table>
+    </div>
+
+    <table class="bottom-grid">
+        <tr>
+            <td style="width: 54%;">
+                <div class="bank-block">
+                    <div class="bank-title">Bank Details</div>
+                    <table class="bank-table">
+                        <tr>
+                            <td class="key">Name:</td>
+                            <td class="value">{{bankName}}</td>
+                        </tr>
+                        <tr>
+                            <td class="key">IFSC Code:</td>
+                            <td class="value">{{bankIfsc}}</td>
+                        </tr>
+                        <tr>
+                            <td class="key">Account No:</td>
+                            <td class="value">{{bankAccountNumber}}</td>
+                        </tr>
+                        <tr>
+                            <td class="key">Bank:</td>
+                            <td class="value">{{bankBranch}}</td>
+                        </tr>
+                    </table>
+                </div>
+            </td>
+            <td style="width: 46%;">
+                <table class="amount-panel">
+                    <tr>
+                        <td class="key">Total Amount</td>
+                        <td class="value">Rs. {{totalAmount}}</td>
+                    </tr>
+                    <tr>
+                        <td class="key">Received Amount</td>
+                        <td class="value">Rs. {{receivedAmount}}</td>
+                    </tr>
+                    <tr class="grand">
+                        <td class="key">Balance Due</td>
+                        <td class="value">Rs. {{balanceAmount}}</td>
+                    </tr>
+                </table>
+
+                <div class="amount-words">
+                    <div class="label">Total Amount (in words)</div>
+                    <div>{{totalAmountInWords}}</div>
+                </div>
+
+                <div class="seal-wrap">
+                    <div class="seal">
+                        <img class="seal-image" src="{{companySealDataUri}}" alt="Asian Trans Logistics seal" />
+                    </div>
+                    <div class="signature-line"></div>
+                    <div class="signature-label">Authorized Signatory for</div>
+                    <div class="signature-company">{{companyName}}</div>
+                </div>
+            </td>
+        </tr>
+    </table>
+
+    <table style="margin-top: 10px;">
+        <tr>
+            <td style="width: 58%; vertical-align: top;">
+                <div class="terms-title">Terms and Conditions</div>
+                <ol class="terms-list">
+                    <li>GST, reverse charge, and other statutory charges will be applied where relevant under law.</li>
+                    <li>Goods are carried subject to the carrier's standard lorry receipt conditions.</li>
+                    <li>Payment is accepted by cheque, NEFT, or RTGS only.</li>
+                    <li>Delayed balances may attract interest after the due date.</li>
+                    <li>Any discrepancy should be reported within 7 days of the invoice date.</li>
+                    <li>All disputes are subject to Nagpur jurisdiction.</li>
+                </ol>
+            </td>
+            <td style="width: 42%; vertical-align: top; padding-left: 12px;">
+                <div class="terms-title">Notes</div>
+                <div style="line-height: 1.45;">
+                    {{notes}}
+                </div>
+            </td>
+        </tr>
+    </table>
+</div>
+</body>
+</html>

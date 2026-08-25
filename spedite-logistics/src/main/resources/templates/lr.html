@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <style>
+        @page {
+            size: A4;
+            margin: 8mm 8mm 8mm 8mm;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            font-size: 8.8px;
+            color: #111827;
+            background: #ffffff;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        .page {
+            position: relative;
+        }
+
+        .copy-sheet {
+            padding-top: 2px;
+        }
+
+        .copy-badge {
+            display: block;
+            width: fit-content;
+            margin: 0 0 4px auto;
+            padding: 3px 10px;
+            border: 1px solid #111827;
+            border-radius: 999px;
+            background: #f8fafc;
+            font-size: 8.8px;
+            font-weight: 800;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        .page-break {
+            page-break-after: always;
+        }
+
+        .header td {
+            vertical-align: top;
+        }
+
+        .logo-cell {
+            width: 20%;
+            padding-top: 2px;
+        }
+
+        .logo-block {
+            width: 112px;
+            height: 72px;
+            border: 1.5px solid #111827;
+            border-radius: 10px;
+            overflow: hidden;
+            box-sizing: border-box;
+        }
+
+        .logo-image {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        .logo-mark {
+            display: block;
+            font-size: 20px;
+            font-weight: 800;
+            color: #b91c1c;
+            letter-spacing: 0.08em;
+            line-height: 1;
+        }
+
+        .logo-line {
+            display: block;
+            margin: 6px auto 5px;
+            width: 62px;
+            border-top: 1.5px solid #b91c1c;
+        }
+
+        .logo-tag {
+            display: block;
+            font-size: 10px;
+            font-style: italic;
+            line-height: 1.1;
+        }
+
+        .brand-cell {
+            width: 50%;
+            text-align: center;
+            padding-top: 2px;
+        }
+
+        .brand-name {
+            font-size: 23px;
+            font-weight: 800;
+            color: #c62828;
+            text-transform: capitalize;
+            line-height: 1.05;
+            margin-bottom: 3px;
+        }
+
+        .brand-sub {
+            font-size: 9.5px;
+            line-height: 1.35;
+        }
+
+        .jurisdiction-cell {
+            width: 30%;
+            text-align: right;
+            font-size: 9.3px;
+            line-height: 1.35;
+        }
+
+        .jurisdiction-title {
+            font-weight: 800;
+            font-size: 12px;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .top-boxes {
+            margin-top: 4px;
+        }
+
+        .top-boxes td {
+            border: 1px solid #111827;
+            vertical-align: top;
+            padding: 5px 6px;
+        }
+
+        .box-title {
+            font-size: 9.6px;
+            font-weight: 800;
+            text-transform: uppercase;
+            text-align: center;
+            margin-bottom: 4px;
+        }
+
+        .box-title.red {
+            color: #c62828;
+            font-size: 10.4px;
+        }
+
+        .box-sub {
+            text-align: center;
+            font-weight: 700;
+            font-size: 9px;
+            margin-bottom: 4px;
+        }
+
+        .consignment-note {
+            margin-top: 4px;
+            padding-top: 4px;
+            border-top: 1px solid #111827;
+        }
+
+        .consignment-note-title {
+            text-align: center;
+            font-size: 9px;
+            font-weight: 800;
+            text-transform: uppercase;
+            margin-bottom: 3px;
+        }
+
+        .consignment-note-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .consignment-note-table td {
+            border: none;
+            padding: 0;
+            line-height: 1.25;
+        }
+
+        .consignment-note-table td.label {
+            width: 24%;
+            font-weight: 700;
+        }
+
+        .consignment-note-table td.value {
+            width: 76%;
+            font-weight: 800;
+            color: #c62828;
+        }
+
+        .stack {
+            display: block;
+            line-height: 1.25;
+        }
+
+        .muted {
+            color: #4b5563;
+        }
+
+        .tiny {
+            font-size: 8.3px;
+            line-height: 1.2;
+        }
+
+        .party-table {
+            margin-top: 4px;
+            border: 1px solid #111827;
+        }
+
+        .party-table td {
+            border: 1px solid #111827;
+            padding: 5px 6px;
+            vertical-align: top;
+        }
+
+        .party-table td.party-label,
+        .party-table td.code-label {
+            width: 18%;
+            background: #f8fafc;
+            font-weight: 800;
+        }
+
+        .party-table td.party-value {
+            width: 42%;
+        }
+
+        .party-table td.code-value {
+            width: 22%;
+        }
+
+        .field-name {
+            font-size: 9px;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 3px;
+        }
+
+        .goods-layout {
+            margin-top: 4px;
+            border: 1px solid #111827;
+        }
+
+        .goods-layout td {
+            border: 1px solid #111827;
+            vertical-align: top;
+            padding: 5px 6px;
+        }
+
+        .goods-left {
+            width: 18%;
+        }
+
+        .goods-center {
+            width: 47%;
+        }
+
+        .goods-right {
+            width: 35%;
+        }
+
+        .mini-block {
+            border: 1px solid #111827;
+            padding: 4px 5px;
+            margin-bottom: 4px;
+        }
+
+        .mini-block:last-child {
+            margin-bottom: 0;
+        }
+
+        .mini-title {
+            font-size: 8.4px;
+            font-weight: 800;
+            text-transform: uppercase;
+            margin-bottom: 3px;
+        }
+
+        .mini-value {
+            min-height: 16px;
+            line-height: 1.2;
+        }
+
+        .center-section {
+            margin-bottom: 6px;
+        }
+
+        .center-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .center-title {
+            font-size: 9px;
+            font-weight: 800;
+            text-transform: uppercase;
+            margin-bottom: 3px;
+        }
+
+        .dimension-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .dimension-table td {
+            border: 1px solid #111827;
+            padding: 4px 5px;
+        }
+
+        .dimension-table td.key {
+            width: 33%;
+            background: #f8fafc;
+            font-weight: 700;
+        }
+
+        .weight-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .weight-table td {
+            border: 1px solid #111827;
+            padding: 4px 5px;
+        }
+
+        .weight-table td.key {
+            background: #f8fafc;
+            font-weight: 700;
+            width: 40%;
+        }
+
+        .weight-table td.value {
+            width: 60%;
+            text-align: right;
+            font-weight: 700;
+        }
+
+        .charge-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 4px;
+        }
+
+        .charge-table td {
+            border: 1px solid #111827;
+            padding: 3px 5px;
+            vertical-align: top;
+        }
+
+        .charge-table td.label {
+            width: 72%;
+            font-size: 8.4px;
+        }
+
+        .charge-table td.amount {
+            width: 28%;
+            text-align: right;
+            font-size: 8.4px;
+        }
+
+        .charge-table tr.total-row td {
+            font-weight: 800;
+            background: #f8fafc;
+        }
+
+        .right-meta {
+            margin-top: 4px;
+        }
+
+        .right-meta td {
+            border: 1px solid #111827;
+            padding: 4px 5px;
+        }
+
+        .right-meta td.key {
+            width: 38%;
+            background: #f8fafc;
+            font-weight: 700;
+        }
+
+        .right-meta td.value {
+            width: 62%;
+            font-weight: 700;
+        }
+
+        .footer-grid {
+            margin-top: 4px;
+        }
+
+        .footer-grid td {
+            border: 1px solid #111827;
+            vertical-align: top;
+            padding: 5px 6px;
+        }
+
+        .footer-title {
+            font-size: 9px;
+            font-weight: 800;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .footer-value {
+            line-height: 1.35;
+        }
+
+        .footer-big {
+            font-size: 10px;
+            font-weight: 800;
+        }
+
+        .sign-box {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .sign-line {
+            width: 140px;
+            margin: 0 auto 5px;
+            border-top: 1px solid #111827;
+        }
+
+        .sign-text {
+            font-weight: 800;
+        }
+
+        .sign-company {
+            margin-top: 2px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .check-line {
+            font-size: 8.3px;
+            line-height: 1.3;
+        }
+    </style>
+</head>
+<body>
+<div class="page copy-sheet" th:each="copy, copyStat : ${copyTypes}" th:classappend="${!copyStat.last} ? ' page-break' : ''">
+    <div class="copy-badge" th:text="${copy}">Driver Copy</div>
+    <table class="header">
+        <tr>
+            <td class="logo-cell">
+                <div class="logo-block">
+                    <img class="logo-image" th:src="${companyLogoDataUri}" alt="Asian Trans Logistics logo" />
+                </div>
+            </td>
+            <td class="brand-cell">
+                <div class="brand-name" th:text="${companyName}">Asian Trans Logistics</div>
+                <div class="brand-sub" th:text="${companyAddress}">Plot No. 04, Shivshakti Nagar...</div>
+                <div class="brand-sub"><strong>Mobile:</strong> <span th:text="${companyPhone}">7057378589</span> <span style="display:inline-block; width: 18px;"></span> <strong>GSTIN:</strong> <span th:text="${companyGstin}">27ACDPY2673C2ZG</span></div>
+                <div class="brand-sub"><strong>Email:</strong> <span th:text="${companyEmail}">asiantranslogistics@gmail.com</span></div>
+                <div class="brand-sub"><strong>Website:</strong> <span th:text="${companyWebsite}">www.asianlgx.com</span></div>
+            </td>
+            <td class="jurisdiction-cell">
+                <div class="jurisdiction-title" th:text="${companyJurisdiction}">Subject to Nagpur Jurisdiction</div>
+                <div th:text="${companyAddress}">Plot No. 04, Shivshakti Nagar...</div>
+            </td>
+        </tr>
+    </table>
+
+    <table class="top-boxes">
+        <tr>
+            <td style="width: 33%;">
+                <div class="box-title">Schedule of Demurrage Charges</div>
+                <div class="tiny" th:each="line : ${demurrageLines}" th:text="${line}">-</div>
+                <div class="consignment-note">
+                    <div class="consignment-note-title">Consignment Note</div>
+                    <table class="consignment-note-table">
+                        <tr>
+                            <td class="label">No.</td>
+                            <td class="value" th:text="${consignmentNoteNo}">3562</td>
+                        </tr>
+                        <tr>
+                            <td class="label">Dt.</td>
+                            <td class="value" th:text="${lrDate}">30/06/2026</td>
+                        </tr>
+                    </table>
+                </div>
+            </td>
+            <td style="width: 34%;">
+                <div class="box-title red">Consignee Copy</div>
+                <div class="box-sub">At owner's &amp; carrier risk</div>
+                <div class="box-sub">Insurance</div>
+                <div class="tiny" th:each="line : ${insuranceLines}" th:text="${line}">-</div>
+            </td>
+            <td style="width: 33%;">
+                <div class="box-title">Caution / Notice</div>
+                <div class="tiny" th:each="line : ${noticeLines}" th:text="${line}">-</div>
+            </td>
+        </tr>
+    </table>
+
+    <table class="party-table">
+        <tr>
+            <td class="party-label">Consignor's Name &amp; Address</td>
+            <td class="party-value">
+                <span class="stack" style="font-weight: 800;" th:text="${consignorName}">-</span>
+                <span class="stack" th:text="${consignorAddress}">-</span>
+                <span class="stack muted" th:text="${consignorPhone}">-</span>
+                <span class="stack muted" th:text="${consignorGst}">-</span>
+            </td>
+            <td class="code-label">From Code:</td>
+            <td class="code-value">
+                <span class="stack" th:each="line : ${fromCodeLines}" th:text="${line}">-</span>
+            </td>
+        </tr>
+        <tr>
+            <td class="party-label">Consignee Name &amp; Address</td>
+            <td class="party-value">
+                <span class="stack" style="font-weight: 800;" th:text="${consigneeName}">-</span>
+                <span class="stack" th:text="${consigneeAddress}">-</span>
+                <span class="stack muted" th:text="${consigneePhone}">-</span>
+                <span class="stack muted" th:text="${consigneeGst}">-</span>
+            </td>
+            <td class="code-label">To Code:</td>
+            <td class="code-value">
+                <span class="stack" th:each="line : ${toCodeLines}" th:text="${line}">-</span>
+            </td>
+        </tr>
+    </table>
+
+    <table class="goods-layout">
+        <tr>
+            <td class="goods-left">
+                <div class="mini-block">
+                    <div class="mini-title">Method of Packing</div>
+                    <div class="mini-value" th:text="${methodOfPacking}">-</div>
+                </div>
+                <div class="mini-block">
+                    <div class="mini-title">Packages</div>
+                    <div class="mini-value" th:text="${packages}">-</div>
+                </div>
+                <div class="mini-block">
+                    <div class="mini-title">Classification of Goods Code</div>
+                    <div class="mini-value" th:text="${goodsCode}">-</div>
+                </div>
+            </td>
+            <td class="goods-center">
+                <div class="center-section">
+                    <div class="center-title">Description (Said to Contain)</div>
+                    <span class="stack" th:each="line : ${descriptionLines}" th:text="${line}">-</span>
+                </div>
+                <div class="center-section">
+                    <div class="center-title">Weight / Reference Details</div>
+                    <table class="right-meta">
+                        <tr>
+                            <td class="key">Weight in K.g. Actual</td>
+                            <td class="value" th:text="${actualWeight}">-</td>
+                        </tr>
+                        <tr>
+                            <td class="key">Weight in K.g. Charges</td>
+                            <td class="value" th:text="${chargedWeight}">-</td>
+                        </tr>
+                        <tr th:if="${hideFreightInPdf != true}">
+                            <td class="key">Rate</td>
+                            <td class="value" th:text="${rate}">-</td>
+                        </tr>
+                        <tr th:if="${hideFreightInPdf == true}">
+                            <td class="key">Freight</td>
+                            <td class="value muted">Hidden as per booking settings</td>
+                        </tr>
+                        <tr>
+                            <td class="key">Lorry No.</td>
+                            <td class="value" th:text="${lorryNo}">-</td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="center-section">
+                    <div class="center-title">Dimension of Consignment in Feet Only</div>
+                    <table class="dimension-table">
+                        <tr>
+                            <td class="key">Length</td>
+                            <td th:text="${dimensionLength}">-</td>
+                            <td class="key">Breadth</td>
+                            <td th:text="${dimensionBreadth}">-</td>
+                            <td class="key">Height</td>
+                            <td th:text="${dimensionHeight}">-</td>
+                        </tr>
+                    </table>
+                </div>
+            </td>
+            <td class="goods-right">
+                <div class="center-section">
+                    <div class="center-title">Charges / Amount</div>
+                    <table class="charge-table" th:if="${hideFreightInPdf != true}">
+                        <tr th:each="row : ${chargeRows}" th:classappend="${row.total} ? ' total-row' : ''">
+                            <td class="label" th:text="${row.label}">-</td>
+                            <td class="amount" th:text="${row.amount}">-</td>
+                        </tr>
+                    </table>
+                    <div class="muted tiny" th:if="${hideFreightInPdf == true}" style="padding: 4px 0 2px;">
+                        Freight amount hidden as per booking settings.
+                    </div>
+                </div>
+                <div class="center-section">
+                    <div class="center-title">Load Type / GST / Basis</div>
+                    <table class="right-meta">
+                        <tr>
+                            <td class="key">Load Type</td>
+                            <td class="value" th:text="${loadType}">-</td>
+                        </tr>
+                        <tr>
+                            <td class="key">GST to be paid by</td>
+                            <td class="value" th:text="${gstPaidBy}">-</td>
+                        </tr>
+                        <tr>
+                            <td class="key">Basis of Booking</td>
+                            <td class="value" th:text="${basisOfBooking}">-</td>
+                        </tr>
+                    </table>
+                </div>
+            </td>
+        </tr>
+    </table>
+
+    <table class="footer-grid">
+        <tr>
+            <td style="width: 30%;">
+                <div class="footer-title">Declared value of Goods</div>
+                <div class="footer-big">Rs. <span th:text="${declaredValue}">0</span></div>
+            </td>
+            <td style="width: 35%;">
+                <div class="footer-title">Basis / Notes</div>
+                <div class="footer-value">
+                    <span class="stack" th:each="line : ${footerLines}" th:text="${line}">-</span>
+                </div>
+            </td>
+            <td style="width: 35%;">
+                <div class="footer-title">For Asian Trans Logistics</div>
+                <div class="footer-value" th:text="${signatureNote}">Original consignment note generated from booking details.</div>
+                <div class="sign-box">
+                    <div class="sign-line"></div>
+                    <div class="sign-text">Authorized Signatory</div>
+                    <div class="sign-company" th:text="${companyName}">Asian Trans Logistics</div>
+                </div>
+            </td>
+        </tr>
+    </table>
+</div>
+</body>
+</html>

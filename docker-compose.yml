@@ -1,0 +1,41 @@
+services:
+  database:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: logistics_db
+      POSTGRES_USER: spedite
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env}
+    volumes:
+      - spedite_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U spedite -d logistics_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  backend:
+    build:
+      context: ./spedite-logistics
+    restart: unless-stopped
+    environment:
+      JDBC_DATABASE_URL: jdbc:postgresql://database:5432/logistics_db
+      DB_USERNAME: spedite
+      DB_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env}
+      JPA_DDL_AUTO: update
+      JPA_SHOW_SQL: "false"
+    depends_on:
+      database:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./spedite-frontend
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-8088}:80"
+    depends_on:
+      - backend
+
+volumes:
+  spedite_postgres_data:
